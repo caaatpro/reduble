@@ -1,5 +1,6 @@
 const readline = require('readline');
 const fs = require('fs');
+const iconv = require('iconv-lite');
 
 const inputFolder = './input/';
 const outputFolder = './output/';
@@ -9,18 +10,15 @@ const lineiterator = async (file) => {
     var emails = [];
 
     var rl = readline.createInterface({
-        input: fs.createReadStream(file),
+        input: fs.createReadStream(file).pipe(iconv.decodeStream('win1251')),
         terminal: false
     });
 
     return new Promise(function(resolve, reject) {
         rl.on('line', function (line){
-            if (line.indexOf('@') == -1) return true;
+            if (emails.indexOf(line) != -1) return true;
 
-            let email = line.split(';')[0];
-
-            if (emails.indexOf(email) != -1) return true;
-            emails.push(email);
+            emails.push(line);
         })
         rl.on('close', function () {
             resolve(emails);
@@ -29,7 +27,7 @@ const lineiterator = async (file) => {
 }
 
 const saveToFile = (file, data) => {
-    fs.writeFileSync(file, data, { encoding: 'utf8' });
+    fs.writeFileSync(file, data);
 };
 
 const main = async () => {
